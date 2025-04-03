@@ -76,13 +76,34 @@ void runcmd(struct cmd *cmd)
     ecmd = (struct execcmd *)cmd;
     if (ecmd->argv[0] == 0)
       exit();
-    printf(2, "exec not implemented\n");
+    /*
+      Utilizo execvp ya que al utilizar comandos ingresados por el usuario, no siempre se tiene el path del ejecutable completo,
+      y se pueden pasar todos los parámetros como una lista.
+      El primer parámetro es el path del ejecutable desde PATH, el segundo es la lista de argumentos.
+    */
+    exec(ecmd->argv[0], ecmd->argv);
+    printf(2, "Error al ejecutar el comando exec\n");
+
     break;
 
   case REDIR:
-    printf(2, "redir not implemented\n");
-    // rcmd = (struct redircmd*)cmd;
-    // runcmd(rcmd->cmd);
+    rcmd = (struct redircmd *)cmd;
+    runcmd(rcmd->cmd);
+
+    close(rcmd->fd);
+    /*
+    Abrir el archivo con los permisos especificados
+    */
+    rcmd->fd = open(rcmd->file, rcmd->mode);
+
+    if (rcmd->fd < 0)
+    { // Devuelvo un error si no se puede abrir el archivo
+      printf(2, "Error al abrir el archivo");
+      return;
+    }
+
+    // dup(rcmd->fd);
+    runcmd(rcmd->cmd);
     break;
 
   case LIST:
@@ -448,23 +469,12 @@ nulterminate(struct cmd *cmd)
     ecmd = (struct execcmd *)cmd;
     for (i = 0; ecmd->argv[i]; i++)
       *ecmd->eargv[i] = 0;
-
-    /*
-      Utilizo execvp ya que al utilizar comandos ingresados por el usuario, no siempre se tiene el path del ejecutable completo,
-      y se pueden pasar todos los parámetros como una lista.
-      El primer parámetro es el path del ejecutable desde PATH, el segundo es la lista de argumentos.
-    */
-    exec(ecmd->argv[0], ecmd->argv);
-    printf(2, "Error al ejecutar el comando exec\n");
     break;
 
   case REDIR:
     rcmd = (struct redircmd *)cmd;
     nulterminate(rcmd->cmd);
     *rcmd->efile = 0;
-
-
-    
     break;
 
   case PIPE:
