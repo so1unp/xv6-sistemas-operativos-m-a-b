@@ -72,43 +72,23 @@ void runcmd(struct cmd *cmd)
   default:
     panic("runcmd");
 
-  case EXEC:
+  case EXEC: // Terminado
     ecmd = (struct execcmd *)cmd;
     if (ecmd->argv[0] == 0)
       exit();
-    /*
-      Utilizo execvp ya que al utilizar comandos ingresados por el usuario, no siempre se tiene el path del ejecutable completo,
-      y se pueden pasar todos los parámetros como una lista.
-      El primer parámetro es el path del ejecutable desde PATH, el segundo es la lista de argumentos.
-    */
     exec(ecmd->argv[0], ecmd->argv);
     printf(2, "Error al ejecutar el comando exec\n");
-
     break;
 
   case REDIR:
     rcmd = (struct redircmd *)cmd;
-
-    // Abrir el archivo con los permisos especificados
-    rcmd->fd = open(rcmd->file, rcmd->mode);
-
-    if (rcmd->fd < 0)
-    { // Devuelvo un error si no se puede abrir el archivo
-      printf(2, "Error al abrir el archivo\n");
-      return;
+    close(rcmd->fd); // Cierra el descriptor de archivo especificado
+    if (open(rcmd->file, rcmd->mode) < 0)
+    { // Abre el archivo con el modo especificado
+      printf(2, "redir: cannot open %s\n", rcmd->file);
+      exit();
     }
-
-    // Redirigir el descriptor de archivo
-    if (dup(rcmd->fd) != rcmd->fd)
-    {
-      printf(2, "Error al redirigir el descriptor de archivo\n");
-      return;
-    }
-
-    close(rcmd->fd); // Cerrar el descriptor original
-
-    // Ejecutar el comando redirigido
-    runcmd(rcmd->cmd);
+    runcmd(rcmd->cmd); // Ejecuta el comando redirigido
     break;
 
   case LIST:
