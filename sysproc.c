@@ -100,3 +100,10 @@ sys_trace(void)
     return 0;
 }
 
+int 
+sys_42(void)
+{
+  write(1, "42\n", 3);
+  return 0;
+}
+
