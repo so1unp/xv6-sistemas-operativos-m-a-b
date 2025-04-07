@@ -88,21 +88,26 @@ void runcmd(struct cmd *cmd)
 
   case REDIR:
     rcmd = (struct redircmd *)cmd;
-    runcmd(rcmd->cmd);
 
-    close(rcmd->fd);
-    /*
-    Abrir el archivo con los permisos especificados
-    */
+    // Abrir el archivo con los permisos especificados
     rcmd->fd = open(rcmd->file, rcmd->mode);
 
     if (rcmd->fd < 0)
     { // Devuelvo un error si no se puede abrir el archivo
-      printf(2, "Error al abrir el archivo");
+      printf(2, "Error al abrir el archivo\n");
       return;
     }
 
-    // dup(rcmd->fd);
+    // Redirigir el descriptor de archivo
+    if (dup(rcmd->fd) != rcmd->fd)
+    {
+      printf(2, "Error al redirigir el descriptor de archivo\n");
+      return;
+    }
+
+    close(rcmd->fd); // Cerrar el descriptor original
+
+    // Ejecutar el comando redirigido
     runcmd(rcmd->cmd);
     break;
 
