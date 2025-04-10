@@ -93,7 +93,7 @@ int sys_trace(void)
   return 0;
 }
 
-int sys_42(void)
+int sys_42(void) // Implementación del syscall sys_42
 {
   return 42;
 }

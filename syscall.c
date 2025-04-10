@@ -100,7 +100,7 @@ extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_trace(void);
-extern int sys_42(void);
+extern int sys_42(void); // Agregado para el ejercicio 3
 
 static int (*syscalls[])(void) = {
     [SYS_fork] sys_fork,
@@ -125,7 +125,7 @@ static int (*syscalls[])(void) = {
     [SYS_mkdir] sys_mkdir,
     [SYS_close] sys_close,
     [SYS_trace] sys_trace,
-    [SYS_sys_42] sys_42,
+    [SYS_sys_42] sys_42, // Se pone SYS_sys_42 para que coincida con el syscall
 };
 
 extern int trace;
@@ -153,7 +153,7 @@ static char *syscalls_names[] = {
     [SYS_mkdir] "sys_mkdir",
     [SYS_close] "sys_close",
     [SYS_trace] "sys_trace",
-    [SYS_sys_42] "sys_42",
+    [SYS_sys_42] "sys_42", // Se pone SYS_sys_42 para que coincida con el syscall
 };
 
 void syscall(void)

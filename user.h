@@ -24,7 +24,7 @@ char *sbrk(int);
 int sleep(int);
 int uptime(void);
 int trace(int);
-int sys_42(void);
+int sys_42(void); // Agregado para el ejercicio 3
 
 // ulib.c
 int stat(const char *, struct stat *);
