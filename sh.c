@@ -76,20 +76,20 @@ void runcmd(struct cmd *cmd)
   default:
     panic("runcmd");
 
-  case EXEC: // Terminado
-    ecmd = (struct execcmd *)cmd;
-    if (ecmd->argv[0] == 0)
+  case EXEC:
+    ecmd = (struct execcmd *)cmd; // Casteamos el comando a execcmd
+    if (ecmd->argv[0] == 0)       // Si no hay argumentos, sale
       exit();
-    exec(ecmd->argv[0], ecmd->argv);
+    exec(ecmd->argv[0], ecmd->argv); // Ejecuta el comando con los argumentos
     printf(2, "Error al ejecutar el comando exec\n");
     break;
 
   case REDIR:
-    rcmd = (struct redircmd *)cmd;
-    close(rcmd->fd); // Cierra el descriptor de archivo especificado
+    rcmd = (struct redircmd *)cmd; // Redirige la salida de un comando a un archivo
+    close(rcmd->fd);               // Cierra el descriptor de archivo especificado
     if (open(rcmd->file, rcmd->mode) < 0)
-    { // Abre el archivo con el modo especificado
-      printf(2, "redir: cannot open %s\n", rcmd->file);
+    {                                                   // Abre el archivo con el modo especificado
+      printf(2, "redir: cannot open %s\n", rcmd->file); // Error al abrir el archivo
       exit();
     }
     runcmd(rcmd->cmd); // Ejecuta el comando redirigido
@@ -102,16 +102,16 @@ void runcmd(struct cmd *cmd)
     break;
 
   case PIPE:
-    pcmd = (struct pipecmd *)cmd;
-    int p[2];
+    pcmd = (struct pipecmd *)cmd; // Casteamos el comando a pipecmd
+    int p[2];                     // Arreglo para el pipe (extremos de lectura y escritura)
 
-    if (pipe(p) < 0)
-    {
+    if (pipe(p) < 0) // Crea el pipe
+    {                // Error al crear el pipe
       printf(2, "pipe: error creating pipe\n");
       exit();
     }
 
-    if (fork1() == 0)
+    if (fork1() == 0) // se crea un proceso hijo para el lado izquierdo
     {
       // Proceso hijo para el lado izquierdo del pipe
       close(1);           // Cierra stdout
@@ -121,7 +121,7 @@ void runcmd(struct cmd *cmd)
       runcmd(pcmd->left); // Ejecuta el comando izquierdo
     }
 
-    if (fork1() == 0)
+    if (fork1() == 0) // se crea un proceso hijo para el lado derecho
     {
       // Proceso hijo para el lado derecho del pipe
       close(0);            // Cierra stdin
