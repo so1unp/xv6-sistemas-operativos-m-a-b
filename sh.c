@@ -5,25 +5,28 @@
 #include "fcntl.h"
 
 // Parsed command representation
-#define EXEC  1
+#define EXEC 1
 #define REDIR 2
-#define PIPE  3
-#define LIST  4
-#define BACK  5
+#define PIPE 3
+#define LIST 4
+#define BACK 5
 
 #define MAXARGS 10
 
-struct cmd {
+struct cmd
+{
   int type;
 };
 
-struct execcmd {
+struct execcmd
+{
   int type;
   char *argv[MAXARGS];
   char *eargv[MAXARGS];
 };
 
-struct redircmd {
+struct redircmd
+{
   int type;
   struct cmd *cmd;
   char *file;
@@ -32,7 +35,8 @@ struct redircmd {
   int fd;
 };
 
-struct pipecmd {
+struct pipecmd
+{
   int type;
   struct cmd *left;
   struct cmd *right;
@@ -98,9 +102,40 @@ void runcmd(struct cmd *cmd)
     break;
 
   case PIPE:
-    printf(2, "pipe not implemented\n");
-    // pcmd = (struct pipecmd*)cmd;
-    // runcmd(pcmd->left);
+    pcmd = (struct pipecmd *)cmd;
+    int p[2];
+
+    if (pipe(p) < 0)
+    {
+      printf(2, "pipe: error creating pipe\n");
+      exit();
+    }
+
+    if (fork1() == 0)
+    {
+      // Proceso hijo para el lado izquierdo del pipe
+      close(1);           // Cierra stdout
+      dup(p[1]);          // Duplica el extremo de escritura del pipe en stdout
+      close(p[0]);        // Cierra el extremo de lectura del pipe
+      close(p[1]);        // Cierra el extremo de escritura original
+      runcmd(pcmd->left); // Ejecuta el comando izquierdo
+    }
+
+    if (fork1() == 0)
+    {
+      // Proceso hijo para el lado derecho del pipe
+      close(0);            // Cierra stdin
+      dup(p[0]);           // Duplica el extremo de lectura del pipe en stdin
+      close(p[1]);         // Cierra el extremo de escritura del pipe
+      close(p[0]);         // Cierra el extremo de lectura original
+      runcmd(pcmd->right); // Ejecuta el comando derecho
+    }
+
+    // Proceso padre
+    close(p[0]); // Cierra ambos extremos del pipe
+    close(p[1]);
+    wait(); // Espera a que terminen los hijos
+    wait();
     break;
 
   case BACK:
